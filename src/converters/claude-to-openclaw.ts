@@ -64,6 +64,10 @@ function buildManifest(plugin: ClaudePlugin, skillDirs: string[]): OpenClawPlugi
     id: plugin.manifest.name,
     name: formatDisplayName(plugin.manifest.name),
     kind: "tool",
+    configSchema: {
+      type: "object",
+      properties: {},
+    },
     skills: skillDirs.map((dir) => `skills/${dir}`),
   }
 }

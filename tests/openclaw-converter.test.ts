@@ -108,6 +108,10 @@ describe("convertClaudeToOpenClaw", () => {
     expect(bundle.manifest.id).toBe("compound-engineering")
     expect(bundle.manifest.name).toBe("Compound Engineering")
     expect(bundle.manifest.kind).toBe("tool")
+    expect(bundle.manifest.configSchema).toEqual({
+      type: "object",
+      properties: {},
+    })
     expect(bundle.manifest.skills).toContain("skills/agent-security-reviewer")
     expect(bundle.manifest.skills).toContain("skills/cmd-workflows:plan")
     expect(bundle.manifest.skills).toContain("skills/existing-skill")

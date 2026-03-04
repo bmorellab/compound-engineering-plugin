@@ -2,14 +2,16 @@ export type OpenClawPluginManifest = {
   id: string
   name: string
   kind: "tool"
-  configSchema?: {
-    type: "object"
-    additionalProperties: boolean
-    properties: Record<string, OpenClawConfigProperty>
-    required?: string[]
-  }
+  configSchema: OpenClawConfigSchema
   uiHints?: Record<string, OpenClawUiHint>
   skills?: string[]
+}
+
+export type OpenClawConfigSchema = {
+  type: "object"
+  properties: Record<string, OpenClawConfigProperty>
+  additionalProperties?: boolean
+  required?: string[]
 }
 
 export type OpenClawConfigProperty = {
