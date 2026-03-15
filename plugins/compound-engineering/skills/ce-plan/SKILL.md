@@ -512,16 +512,16 @@ After writing the plan file, present the options using the platform's blocking q
 
 **Options:**
 1. **Open plan in editor** - Open the plan file for review
-2. **Run `/deepen-plan`** - Enhance sections with parallel research agents
+2. **Run `deepen-plan` skill** - Enhance sections with parallel research agents
 3. **Review and refine** - Improve the plan through structured document review
 4. **Share to Proof** - Upload the plan for collaborative review and sharing
-5. **Start `/ce:work`** - Begin implementing this plan locally
-6. **Start `/ce:work` on remote** - Begin implementing in Claude Code on the web
+5. **Start `ce:work` skill** - Begin implementing this plan in the current environment
+6. **Start `ce:work` skill in another session** - Begin implementing in a separate agent session when the current platform supports it
 7. **Create Issue** - Create an issue in the configured tracker
 
 Based on selection:
-- **Open plan in editor** → Run `open docs/plans/<plan_filename>.md`
-- **`/deepen-plan`** → Call `/deepen-plan` with the plan path
+- **Open plan in editor** → Open `docs/plans/<plan_filename>.md` using the current platform's file-open or editor mechanism (e.g., `open` on macOS, `xdg-open` on Linux, or the IDE's file-open API)
+- **`deepen-plan` skill** → Call the `deepen-plan` skill with the plan path
 - **Review and refine** → Load the `document-review` skill
 - **Share to Proof** → Upload the plan:
   ```bash
@@ -533,16 +533,16 @@ Based on selection:
   PROOF_URL=$(echo "$RESPONSE" | jq -r '.tokenUrl')
   ```
   Display `View & collaborate in Proof: <PROOF_URL>` if successful, then return to the options
-- **`/ce:work`** → Call `/ce:work` with the plan path
-- **`/ce:work` on remote** → Run `/ce:work docs/plans/<plan_filename>.md &`
+- **`ce:work` skill** → Call the `ce:work` skill with the plan path
+- **`ce:work` skill in another session** → If the current platform supports launching a separate agent session, start the `ce:work` skill with the plan path there. Otherwise, explain the limitation briefly and offer to run the `ce:work` skill in the current session instead.
 - **Create Issue** → Follow the Issue Creation section below
 - **Other** → Accept free text for revisions and loop back to options
 
-If running with ultrathink enabled, automatically run `/deepen-plan` after plan creation for maximum grounding.
+If running with ultrathink enabled, or the platform's reasoning/effort level is set to max or extra-high, automatically run the `deepen-plan` skill after plan creation for maximum grounding.
 
 ## Issue Creation
 
-When the user selects "Create Issue", detect their project tracker from CLAUDE.md:
+When the user selects "Create Issue", detect their project tracker from `CLAUDE.md` or `AGENTS.md`:
 
 1. Look for `project_tracker: github` or `project_tracker: linear`
 2. If GitHub:
@@ -559,10 +559,10 @@ When the user selects "Create Issue", detect their project tracker from CLAUDE.m
 
 4. If no tracker is configured:
    - Ask which tracker they use using the platform's blocking question tool when available (see Interaction Method)
-   - Suggest adding the tracker to CLAUDE.md for future runs
+   - Suggest adding the tracker to `CLAUDE.md` or `AGENTS.md` for future runs
 
 After issue creation:
 - Display the issue URL
-- Ask whether to proceed to `/ce:work`
+- Ask whether to proceed to the `ce:work` skill
 
 NEVER CODE! Research, decide, and write the plan.
