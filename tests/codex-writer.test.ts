@@ -105,4 +105,56 @@ describe("writeCodexBundle", () => {
     const backupContent = await fs.readFile(path.join(codexRoot, backupFileName!), "utf8")
     expect(backupContent).toBe(originalContent)
   })
+
+  test("transforms copied SKILL.md files using Codex invocation targets", async () => {
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "codex-skill-transform-"))
+    const sourceSkillDir = path.join(tempRoot, "source-skill")
+    await fs.mkdir(sourceSkillDir, { recursive: true })
+    await fs.writeFile(
+      path.join(sourceSkillDir, "SKILL.md"),
+      `---
+name: ce:brainstorm
+description: Brainstorm workflow
+---
+
+Continue with /ce:plan when ready.
+Or use /workflows:plan if you're following an older doc.
+Use /deepen-plan for deeper research.
+`,
+    )
+    await fs.writeFile(
+      path.join(sourceSkillDir, "notes.md"),
+      "Reference docs still mention /ce:plan here.\n",
+    )
+
+    const bundle: CodexBundle = {
+      prompts: [],
+      skillDirs: [{ name: "ce:brainstorm", sourceDir: sourceSkillDir }],
+      generatedSkills: [],
+      invocationTargets: {
+        promptTargets: {
+          "ce-plan": "ce-plan",
+          "workflows-plan": "ce-plan",
+          "deepen-plan": "deepen-plan",
+        },
+        skillTargets: {},
+      },
+    }
+
+    await writeCodexBundle(tempRoot, bundle)
+
+    const installedSkill = await fs.readFile(
+      path.join(tempRoot, ".codex", "skills", "ce:brainstorm", "SKILL.md"),
+      "utf8",
+    )
+    expect(installedSkill).toContain("/prompts:ce-plan")
+    expect(installedSkill).not.toContain("/workflows:plan")
+    expect(installedSkill).toContain("/prompts:deepen-plan")
+
+    const notes = await fs.readFile(
+      path.join(tempRoot, ".codex", "skills", "ce:brainstorm", "notes.md"),
+      "utf8",
+    )
+    expect(notes).toContain("/ce:plan")
+  })
 })
