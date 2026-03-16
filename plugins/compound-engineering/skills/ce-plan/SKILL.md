@@ -1,6 +1,6 @@
 ---
 name: ce:plan
-description: Transform feature descriptions into well-structured project plans following conventions
+description: Transform feature descriptions into well-structured GitHub Issues following conventions
 argument-hint: "[feature description, bug report, or improvement idea]"
 ---
 
@@ -10,7 +10,7 @@ argument-hint: "[feature description, bug report, or improvement idea]"
 
 **Note: The current year is 2026.** Use this when dating plans and searching for recent documentation.
 
-Transform feature descriptions, bug reports, or improvement ideas into well-structured markdown files issues that follow project conventions and best practices. This command provides flexible detail levels to match your needs.
+Transform feature descriptions, bug reports, or improvement ideas into well-structured GitHub Issues that follow project conventions and best practices. This command provides flexible detail levels to match your needs.
 
 ## Feature Description
 
@@ -24,20 +24,20 @@ Do not proceed until you have a clear feature description from the user.
 
 **Check for brainstorm output first:**
 
-Before asking questions, look for recent brainstorm documents in `docs/brainstorms/` that match this feature:
+Before asking questions, look for recent brainstorm issues on GitHub:
 
 ```bash
-ls -la docs/brainstorms/*.md 2>/dev/null | head -10
+gh issue list --label brainstorm --state open --json number,title,body,createdAt --limit 10
 ```
 
 **Relevance criteria:** A brainstorm is relevant if:
-- The topic (from filename or YAML frontmatter) semantically matches the feature description
+- The title or body semantically matches the feature description
 - Created within the last 14 days
 - If multiple candidates match, use the most recent one
 
 **If a relevant brainstorm exists:**
-1. Read the brainstorm document **thoroughly** — every section matters
-2. Announce: "Found brainstorm from [date]: [topic]. Using as foundation for planning."
+1. Read the brainstorm issue **thoroughly** — every section matters (`gh issue view <number> --json body`)
+2. Announce: "Found brainstorm #<number>: [topic]. Using as foundation for planning."
 3. Extract and carry forward **ALL** of the following into the plan:
    - Key decisions and their rationale
    - Chosen approach and why alternatives were rejected
@@ -47,7 +47,7 @@ ls -la docs/brainstorms/*.md 2>/dev/null | head -10
    - Any specific technical choices or patterns discussed
 4. **Skip the idea refinement questions below** — the brainstorm already answered WHAT to build
 5. Use brainstorm content as the **primary input** to research and planning phases
-6. **Critical: The brainstorm is the origin document.** Throughout the plan, reference specific decisions with `(see brainstorm: docs/brainstorms/<filename>)` when carrying forward conclusions. Do not paraphrase decisions in a way that loses their original context — link back to the source.
+6. **Critical: The brainstorm is the origin document.** Throughout the plan, reference specific decisions with `(see brainstorm: #<issue_number>)` when carrying forward conclusions. Do not paraphrase decisions in a way that loses their original context — link back to the source.
 7. **Do not omit brainstorm content** — if the brainstorm discussed it, the plan must address it (even if briefly). Scan each brainstorm section before finalizing the plan to verify nothing was dropped.
 
 **If multiple brainstorms could match:**
@@ -138,12 +138,7 @@ Think like a product manager - what would make this issue clear and actionable? 
 
 - [ ] Draft clear, searchable issue title using conventional format (e.g., `feat: Add user authentication`, `fix: Cart total calculation`)
 - [ ] Determine issue type: enhancement, bug, refactor
-- [ ] Convert title to filename: add today's date prefix, determine daily sequence number, strip prefix colon, kebab-case, add `-plan` suffix
-  - Scan `docs/plans/` for files matching today's date pattern `YYYY-MM-DD-\d{3}-`
-  - Find the highest existing sequence number for today
-  - Increment by 1, zero-padded to 3 digits (001, 002, etc.)
-  - Example: `feat: Add User Authentication` → `2026-01-21-001-feat-add-user-authentication-plan.md`
-  - Keep it descriptive (3-5 words after prefix) so plans are findable by context
+- [ ] Determine appropriate GitHub labels based on type (e.g., `plan`, `enhancement`, `bug`, `refactor`)
 
 **Stakeholder Analysis:**
 
@@ -186,14 +181,6 @@ Select how comprehensive you want the issue to be, simpler is mostly better.
 **Structure:**
 
 ````markdown
----
-title: [Issue Title]
-type: [feat|fix|refactor]
-status: active
-date: YYYY-MM-DD
-origin: docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md  # if originated from brainstorm, otherwise omit
----
-
 # [Issue Title]
 
 [Brief problem/feature description]
@@ -221,7 +208,7 @@ end
 
 ## Sources
 
-- **Origin brainstorm:** [docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md](path) — include if plan originated from a brainstorm
+- **Origin brainstorm:** #<issue_number> — include if plan originated from a brainstorm
 - Related issue: #[issue_number]
 - Documentation: [relevant_docs_url]
 ````
@@ -241,14 +228,6 @@ end
 **Structure:**
 
 ```markdown
----
-title: [Issue Title]
-type: [feat|fix|refactor]
-status: active
-date: YYYY-MM-DD
-origin: docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md  # if originated from brainstorm, otherwise omit
----
-
 # [Issue Title]
 
 ## Overview
@@ -293,7 +272,7 @@ origin: docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md  # if originated from 
 
 ## Sources & References
 
-- **Origin brainstorm:** [docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md](path) — include if plan originated from a brainstorm
+- **Origin brainstorm:** #<issue_number> — include if plan originated from a brainstorm
 - Similar implementations: [file_path:line_number]
 - Best practices: [documentation_url]
 - Related PRs: #[pr_number]
@@ -316,14 +295,6 @@ origin: docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md  # if originated from 
 **Structure:**
 
 ```markdown
----
-title: [Issue Title]
-type: [feat|fix|refactor]
-status: active
-date: YYYY-MM-DD
-origin: docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md  # if originated from brainstorm, otherwise omit
----
-
 # [Issue Title]
 
 ## Overview
@@ -436,7 +407,7 @@ origin: docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md  # if originated from 
 
 ### Origin
 
-- **Brainstorm document:** [docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md](path) — include if plan originated from a brainstorm. Key decisions carried forward: [list 2-3 major decisions from brainstorm]
+- **Brainstorm issue:** #<issue_number> — include if plan originated from a brainstorm. Key decisions carried forward: [list 2-3 major decisions from brainstorm]
 
 ### Internal References
 
@@ -515,15 +486,15 @@ end
 
 ### 6. Final Review & Submission
 
-**Brainstorm cross-check (if plan originated from a brainstorm):**
+**Brainstorm cross-check (if plan originated from a brainstorm issue):**
 
-Before finalizing, re-read the brainstorm document and verify:
+Before finalizing, re-read the brainstorm issue (`gh issue view <number>`) and verify:
 - [ ] Every key decision from the brainstorm is reflected in the plan
 - [ ] The chosen approach matches what was decided in the brainstorm
 - [ ] Constraints and requirements from the brainstorm are captured in acceptance criteria
 - [ ] Open questions from the brainstorm are either resolved or flagged
-- [ ] The `origin:` frontmatter field points to the brainstorm file
-- [ ] The Sources section includes the brainstorm with a summary of carried-forward decisions
+- [ ] The Sources section references the brainstorm issue number
+- [ ] The Sources section includes a summary of carried-forward decisions
 
 **Pre-submission Checklist:**
 
@@ -535,107 +506,44 @@ Before finalizing, re-read the brainstorm document and verify:
 - [ ] Add names of files in pseudo code examples and todo lists
 - [ ] Add an ERD mermaid diagram if applicable for new model changes
 
-## Write Plan File
+## Create Plan as GitHub Issue
 
-**REQUIRED: Write the plan file to disk before presenting any options.**
+**REQUIRED: Create the GitHub Issue before presenting any options.**
 
 ```bash
-mkdir -p docs/plans/
-# Determine daily sequence number
-today=$(date +%Y-%m-%d)
-last_seq=$(ls docs/plans/${today}-*-plan.md 2>/dev/null | grep -oP "${today}-\K\d{3}" | sort -n | tail -1)
-next_seq=$(printf "%03d" $(( ${last_seq:-0} + 1 )))
+gh issue create \
+  --title "<type>: <title>" \
+  --body "<plan_content>" \
+  --label "plan,<type>"
 ```
 
-Use the Write tool to save the complete plan to `docs/plans/YYYY-MM-DD-NNN-<type>-<descriptive-name>-plan.md` (where NNN is `$next_seq` from the bash command above). This step is mandatory and cannot be skipped — even when running as part of LFG/SLFG or other automated pipelines.
+Where `<type>` is the issue type label (e.g., `enhancement`, `bug`, `refactor`).
 
-Confirm: "Plan written to docs/plans/[filename]"
+Confirm: "Plan created as GitHub Issue #<number>: <url>"
 
-**Pipeline mode:** If invoked from an automated workflow (LFG, SLFG, or any `disable-model-invocation` context), skip all AskUserQuestion calls. Make decisions automatically and proceed to writing the plan without interactive prompts.
-
-## Output Format
-
-**Filename:** Use the date, daily sequence number, and kebab-case filename from Step 2 Title & Categorization.
-
-```
-docs/plans/YYYY-MM-DD-NNN-<type>-<descriptive-name>-plan.md
-```
-
-Examples:
-- ✅ `docs/plans/2026-01-15-001-feat-user-authentication-flow-plan.md`
-- ✅ `docs/plans/2026-02-03-001-fix-checkout-race-condition-plan.md`
-- ✅ `docs/plans/2026-03-10-002-refactor-api-client-extraction-plan.md`
-- ❌ `docs/plans/2026-01-15-feat-thing-plan.md` (missing sequence number, not descriptive)
-- ❌ `docs/plans/2026-01-15-001-feat-new-feature-plan.md` (too vague - what feature?)
-- ❌ `docs/plans/2026-01-15-001-feat: user auth-plan.md` (invalid characters - colon and space)
-- ❌ `docs/plans/feat-user-auth-plan.md` (missing date prefix and sequence number)
+**Pipeline mode:** If invoked from an automated workflow (LFG, SLFG, or any `disable-model-invocation` context), skip all AskUserQuestion calls. Make decisions automatically and proceed to creating the issue without interactive prompts.
 
 ## Post-Generation Options
 
-After writing the plan file, use the **AskUserQuestion tool** to present these options:
+After creating the GitHub Issue, use the **AskUserQuestion tool** to present these options:
 
-**Question:** "Plan ready at `docs/plans/YYYY-MM-DD-NNN-<type>-<name>-plan.md`. What would you like to do next?"
+**Question:** "Plan created as issue #<number>. What would you like to do next?"
 
 **Options:**
-1. **Open plan in editor** - Open the plan file for review
-2. **Run `/deepen-plan`** - Enhance each section with parallel research agents (best practices, performance, UI)
-3. **Review and refine** - Improve the document through structured self-review
-4. **Share to Proof** - Upload to Proof for collaborative review and sharing
-5. **Start `/ce:work`** - Begin implementing this plan locally
-6. **Start `/ce:work` on remote** - Begin implementing in Claude Code on the web (use `&` to run in background)
-7. **Create Issue** - Create issue in project tracker (GitHub/Linear)
+1. **Open issue in browser** - View the plan on GitHub
+2. **Run `/deepen-plan`** - Enhance each section with parallel research agents (updates the issue body)
+3. **Review and refine** - Improve the plan through structured self-review
+4. **Start `/ce:work #<number>`** - Begin implementing this plan
 
 Based on selection:
-- **Open plan in editor** → Run `open docs/plans/<plan_filename>.md` to open the file in the user's default editor
-- **`/deepen-plan`** → Call the /deepen-plan command with the plan file path to enhance with research
-- **Review and refine** → Load `document-review` skill.
-- **Share to Proof** → Upload the plan to Proof:
-  ```bash
-  CONTENT=$(cat docs/plans/<plan_filename>.md)
-  TITLE="Plan: <plan title from frontmatter>"
-  RESPONSE=$(curl -s -X POST https://www.proofeditor.ai/share/markdown \
-    -H "Content-Type: application/json" \
-    -d "$(jq -n --arg title "$TITLE" --arg markdown "$CONTENT" --arg by "ai:compound" '{title: $title, markdown: $markdown, by: $by}')")
-  PROOF_URL=$(echo "$RESPONSE" | jq -r '.tokenUrl')
-  ```
-  Display: `View & collaborate in Proof: <PROOF_URL>` — skip silently if curl fails. Then return to options.
-- **`/ce:work`** → Call the /ce:work command with the plan file path
-- **`/ce:work` on remote** → Run `/ce:work docs/plans/<plan_filename>.md &` to start work in background for Claude Code web
-- **Create Issue** → See "Issue Creation" section below
+- **Open issue in browser** → Run `gh issue view <number> --web`
+- **`/deepen-plan`** → Call the /deepen-plan command, then update the issue body with `gh issue edit <number> --body-file`
+- **Review and refine** → Load `document-review` skill. After review, update the issue body with `gh issue edit <number> --body-file`.
+- **`/ce:work`** → Call the /ce:work command with the issue number
 - **Other** (automatically provided) → Accept free text for rework or specific changes
 
 **Note:** If running `/ce:plan` with ultrathink enabled, automatically run `/deepen-plan` after plan creation for maximum depth and grounding.
 
-Loop back to options after Simplify or Other changes until user selects `/ce:work` or another action.
-
-## Issue Creation
-
-When user selects "Create Issue", detect their project tracker from CLAUDE.md:
-
-1. **Check for tracker preference** in user's CLAUDE.md (global or project):
-   - Look for `project_tracker: github` or `project_tracker: linear`
-   - Or look for mentions of "GitHub Issues" or "Linear" in their workflow section
-
-2. **If GitHub:**
-
-   Use the title and type from Step 2 (already in context - no need to re-read the file):
-
-   ```bash
-   gh issue create --title "<type>: <title>" --body-file <plan_path>
-   ```
-
-3. **If Linear:**
-
-   ```bash
-   linear issue create --title "<title>" --description "$(cat <plan_path>)"
-   ```
-
-4. **If no tracker configured:**
-   Ask user: "Which project tracker do you use? (GitHub/Linear/Other)"
-   - Suggest adding `project_tracker: github` or `project_tracker: linear` to their CLAUDE.md
-
-5. **After creation:**
-   - Display the issue URL
-   - Ask if they want to proceed to `/ce:work`
+Loop back to options after changes until user selects `/ce:work` or another action.
 
 NEVER CODE! Just research and write the plan.

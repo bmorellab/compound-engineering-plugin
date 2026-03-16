@@ -1,20 +1,24 @@
 ---
 name: ce:work
-description: Execute work plans efficiently while maintaining quality and finishing features
-argument-hint: "[plan file, specification, or todo file path]"
+description: Execute work plans from GitHub Issues efficiently while maintaining quality and finishing features
+argument-hint: "[GitHub issue number (e.g., #42 or 42)]"
 ---
 
 # Work Plan Execution Command
 
-Execute a work plan efficiently while maintaining quality and finishing features.
+Execute a work plan from a GitHub Issue efficiently while maintaining quality and finishing features.
 
 ## Introduction
 
-This command takes a work document (plan, specification, or todo file) and executes it systematically. The focus is on **shipping complete features** by understanding requirements quickly, following existing patterns, and maintaining quality throughout.
+This command takes a GitHub issue number containing a plan (created by `/ce:plan`) and executes it systematically. The focus is on **shipping complete features** by understanding requirements quickly, following existing patterns, and maintaining quality throughout.
 
-## Input Document
+## Issue Reference
 
-<input_document> #$ARGUMENTS </input_document>
+<issue_reference> #$ARGUMENTS </issue_reference>
+
+**If the issue reference above is empty, ask the user:** "Which GitHub issue should I work on? Provide the issue number (e.g., #42 or 42)."
+
+Do not proceed until you have a valid issue number.
 
 ## Execution Workflow
 
@@ -22,7 +26,13 @@ This command takes a work document (plan, specification, or todo file) and execu
 
 1. **Read Plan and Clarify**
 
-   - Read the work document completely
+   Fetch the issue content:
+
+   ```bash
+   gh issue view <number> --json title,body,labels,state,assignees
+   ```
+
+   - Read the issue body (plan) completely
    - Review any references or links provided in the plan
    - If anything is unclear or ambiguous, ask clarifying questions now
    - Get user approval to proceed
@@ -52,9 +62,9 @@ This command takes a work document (plan, specification, or todo file) and execu
    **Option A: Create a new branch**
    ```bash
    git pull origin [default_branch]
-   git checkout -b feature-branch-name
+   git checkout -b feat/<issue_number>-<kebab-case-title>
    ```
-   Use a meaningful name based on the work (e.g., `feat/user-authentication`, `fix/email-validation`).
+   Use the issue number in the branch name to auto-link commits and PRs (e.g., `feat/42-user-authentication`, `fix/57-email-validation`).
 
    **Option B: Use a worktree (recommended for parallel development)**
    ```bash
@@ -73,7 +83,7 @@ This command takes a work document (plan, specification, or todo file) and execu
    - You plan to switch between branches frequently
 
 3. **Create Todo List**
-   - Use TodoWrite to break plan into actionable tasks
+   - Use TodoWrite to break the issue plan into actionable tasks
    - Include dependencies between tasks
    - Prioritize based on what needs to be done first
    - Include testing and quality check tasks
@@ -95,7 +105,7 @@ This command takes a work document (plan, specification, or todo file) and execu
      - Run System-Wide Test Check (see below)
      - Run tests after changes
      - Mark task as completed in TodoWrite
-     - Mark off the corresponding checkbox in the plan file ([ ] → [x])
+     - Update the corresponding checkbox in the GitHub issue ([ ] → [x])
      - Evaluate for incremental commit (see below)
    ```
 
@@ -113,7 +123,14 @@ This command takes a work document (plan, specification, or todo file) and execu
 
    **When this matters most:** Any change that touches models with callbacks, error handling with fallback/retry, or functionality exposed through multiple interfaces.
 
-   **IMPORTANT**: Always update the original plan document by checking off completed items. Use the Edit tool to change `- [ ]` to `- [x]` for each task you finish. This keeps the plan as a living document showing progress and ensures no checkboxes are left unchecked.
+   **IMPORTANT**: Always update the GitHub issue by checking off completed items. Use `gh issue edit` to change `- [ ]` to `- [x]` for each task you finish. This keeps the issue as a living document showing progress.
+
+   ```bash
+   # Update a checkbox in the issue body
+   gh issue view <number> --json body --jq '.body' > /tmp/issue_body.md
+   # Edit /tmp/issue_body.md to check off the completed task
+   gh issue edit <number> --body-file /tmp/issue_body.md
+   ```
 
 2. **Incremental Commits**
 
@@ -136,8 +153,8 @@ This command takes a work document (plan, specification, or todo file) and execu
    # 2. Stage only files related to this logical unit (not `git add .`)
    git add <files related to this logical unit>
 
-   # 3. Commit with conventional message
-   git commit -m "feat(scope): description of this unit"
+   # 3. Commit with conventional message referencing the issue
+   git commit -m "feat(scope): description of this unit (#<issue_number>)"
    ```
 
    **Handling merge conflicts:** If conflicts arise during rebasing or merging, resolve them immediately. Incremental commits make conflict resolution easier since each commit is small and focused.
@@ -224,7 +241,7 @@ This command takes a work document (plan, specification, or todo file) and execu
 
    # Commit with conventional format
    git commit -m "$(cat <<'EOF'
-   feat(scope): description of what and why
+   feat(scope): description of what and why (#<issue_number>)
 
    Brief explanation if needed.
 
@@ -270,9 +287,11 @@ This command takes a work document (plan, specification, or todo file) and execu
 3. **Create Pull Request**
 
    ```bash
-   git push -u origin feature-branch-name
+   git push -u origin feat/<issue_number>-<kebab-case-title>
 
    gh pr create --title "Feature: [Description]" --body "$(cat <<'EOF'
+   Closes #<issue_number>
+
    ## Summary
    - What was built
    - Why it was needed
@@ -313,11 +332,12 @@ This command takes a work document (plan, specification, or todo file) and execu
    )"
    ```
 
-4. **Update Plan Status**
+4. **Close the Issue**
 
-   If the input document has YAML frontmatter with a `status` field, update it to `completed`:
-   ```
-   status: active  →  status: completed
+   The issue will auto-close when the PR merges (via `Closes #<issue_number>` in the PR body). If you need to close it manually:
+
+   ```bash
+   gh issue close <number> --comment "Completed via PR #<pr_number>"
    ```
 
 5. **Notify User**
@@ -408,7 +428,7 @@ See the `orchestrating-swarms` skill for detailed swarm patterns and best practi
 
 ### The Plan is Your Guide
 
-- Work documents should reference similar code and patterns
+- The GitHub issue should reference similar code and patterns
 - Load those references and follow them
 - Don't reinvent - match what exists
 
@@ -443,6 +463,7 @@ Before creating PR, verify:
 - [ ] Figma designs match implementation (if applicable)
 - [ ] Before/after screenshots captured and uploaded (for UI changes)
 - [ ] Commit messages follow conventional format
+- [ ] PR description includes `Closes #<issue_number>`
 - [ ] PR description includes Post-Deploy Monitoring & Validation section (or explicit no-impact rationale)
 - [ ] PR description includes summary, testing notes, and screenshots
 - [ ] PR description includes Compound Engineered badge

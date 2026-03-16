@@ -72,52 +72,46 @@ Use **AskUserQuestion tool** to ask which approach the user prefers.
 
 ### Phase 3: Capture the Design
 
-Write a brainstorm document to `docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md`.
+Create a GitHub Issue with the `brainstorm` label to capture the design:
+
+```bash
+gh issue create \
+  --title "Brainstorm: <topic>" \
+  --body "<brainstorm_content>" \
+  --label "brainstorm"
+```
 
 **Document structure:** See the `brainstorming` skill for the template format. Key sections: What We're Building, Why This Approach, Key Decisions, Open Questions.
 
-Ensure `docs/brainstorms/` directory exists before writing.
-
-**IMPORTANT:** Before proceeding to Phase 4, check if there are any Open Questions listed in the brainstorm document. If there are open questions, YOU MUST ask the user about each one using AskUserQuestion before offering to proceed to planning. Move resolved questions to a "Resolved Questions" section.
+**IMPORTANT:** Before proceeding to Phase 4, check if there are any Open Questions listed in the brainstorm issue. If there are open questions, YOU MUST ask the user about each one using AskUserQuestion before offering to proceed to planning. Move resolved questions to a "Resolved Questions" section by editing the issue body with `gh issue edit <number> --body-file`.
 
 ### Phase 4: Handoff
 
 Use **AskUserQuestion tool** to present next steps:
 
-**Question:** "Brainstorm captured. What would you like to do next?"
+**Question:** "Brainstorm captured as issue #<number>. What would you like to do next?"
 
 **Options:**
-1. **Review and refine** - Improve the document through structured self-review
-2. **Proceed to planning** - Run `/ce:plan` (will auto-detect this brainstorm)
-3. **Share to Proof** - Upload to Proof for collaborative review and sharing
+1. **Review and refine** - Improve the brainstorm through structured self-review
+2. **Proceed to planning** - Run `/ce:plan` (will find this brainstorm issue by label)
+3. **Open issue in browser** - View the brainstorm issue on GitHub
 4. **Ask more questions** - I have more questions to clarify before moving on
-5. **Done for now** - Return later
+5. **Done for now** - The brainstorm is saved as issue #<number>
 
-**If user selects "Share to Proof":**
-
-```bash
-CONTENT=$(cat docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md)
-TITLE="Brainstorm: <topic title>"
-RESPONSE=$(curl -s -X POST https://www.proofeditor.ai/share/markdown \
-  -H "Content-Type: application/json" \
-  -d "$(jq -n --arg title "$TITLE" --arg markdown "$CONTENT" --arg by "ai:compound" '{title: $title, markdown: $markdown, by: $by}')")
-PROOF_URL=$(echo "$RESPONSE" | jq -r '.tokenUrl')
-```
-
-Display the URL prominently: `View & collaborate in Proof: <PROOF_URL>`
-
-If the curl fails, skip silently. Then return to the Phase 4 options.
+Based on selection:
+- **Open issue in browser** → Run `gh issue view <number> --web`
+- **Proceed to planning** → Call `/ce:plan` with the feature description
 
 **If user selects "Ask more questions":** YOU (Claude) return to Phase 1.2 (Collaborative Dialogue) and continue asking the USER questions one at a time to further refine the design. The user wants YOU to probe deeper - ask about edge cases, constraints, preferences, or areas not yet explored. Continue until the user is satisfied, then return to Phase 4.
 
 **If user selects "Review and refine":**
 
-Load the `document-review` skill and apply it to the brainstorm document.
+Load the `document-review` skill and apply it to the brainstorm issue content (fetch with `gh issue view <number> --json body`).
 
-When document-review returns "Review complete", present next steps:
+When document-review returns "Review complete", update the issue body with `gh issue edit <number> --body-file` and present next steps:
 
-1. **Move to planning** - Continue to `/ce:plan` with this document
-2. **Done for now** - Brainstorming complete. To start planning later: `/ce:plan [document-path]`
+1. **Move to planning** - Continue to `/ce:plan` with this brainstorm
+2. **Done for now** - Brainstorming complete. The brainstorm is saved as issue #<number>.
 
 ## Output Summary
 
@@ -126,7 +120,8 @@ When complete, display:
 ```
 Brainstorm complete!
 
-Document: docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md
+Issue: #<number> - <title>
+URL: <issue_url>
 
 Key decisions:
 - [Decision 1]
